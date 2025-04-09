@@ -1,81 +1,125 @@
 # Grayola App
 
-A modern web application with authentication and a clean, responsive UI using ShadCN UI and Tailwind CSS.
+Grayola es una aplicación web para la gestión de proyectos de diseño, permitiendo la colaboración entre clientes y diseñadores.
 
-## Features
+## Requisitos Previos
 
-- Clean and modern UI using ShadCN UI and Tailwind CSS
-- Light and dark mode support
-- User authentication with Supabase
-- Responsive design for all device sizes
+- Node.js (v18 o superior)
+- npm o yarn
+- Una cuenta en Supabase (para la base de datos y autenticación)
 
-## Getting Started
+## Instrucciones de Instalación
 
-### Prerequisites
-
-- Node.js (v18 or newer)
-- npm or yarn
-- Supabase account
-
-### Installation
-
-1. Clone the repository:
-
+1. Clona el repositorio:
 ```bash
-git clone https://github.com/yourusername/grayola-app.git
+git clone [URL_DEL_REPOSITORIO]
 cd grayola-app
 ```
 
-2. Install dependencies:
-
+2. Instala las dependencias:
 ```bash
 npm install
-# or
+# o
 yarn install
 ```
 
-3. Set up environment variables:
-
-Copy the `.env.local.example` file to `.env.local` and update the values with your Supabase credentials:
-
-```bash
-cp .env.local.example .env.local
+3. Configura las variables de entorno:
+Crea un archivo `.env.local` en la raíz del proyecto con las siguientes variables:
+```env
+NEXT_PUBLIC_SUPABASE_URL=tu_url_de_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_clave_anonima_de_supabase
 ```
 
-Then edit `.env.local` with your Supabase credentials from your Supabase project dashboard.
-
-4. Start the development server:
-
+4. Inicia el servidor de desarrollo:
 ```bash
 npm run dev
-# or
+# o
 yarn dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## Authentication
+## Estructura del Proyecto
 
-This project uses Supabase for authentication. The login and registration flows are set up and ready to use.
+```
+src/
+├── app/                    # Rutas y páginas de Next.js
+├── components/            # Componentes reutilizables
+│   ├── ui/               # Componentes de interfaz base
+│   └── ...              # Otros componentes específicos
+├── contexts/             # Contextos de React
+├── lib/                  # Utilidades y servicios
+└── ...
+```
 
-To enable authentication:
+## Arquitectura y Tecnologías
 
-1. Create a Supabase project at [https://supabase.com](https://supabase.com)
-2. Enable Email/Password authentication in Authentication > Providers
-3. Update your environment variables with your Supabase credentials
+### Frontend
+- **Next.js 14**: Framework de React para renderizado del lado del servidor
+- **TypeScript**: Para tipado estático y mejor desarrollo
+- **Tailwind CSS**: Para estilos y diseño responsive
+- **Lucide Icons**: Biblioteca de iconos
+- **shadcn/ui**: Componentes de UI reutilizables
 
-## Customization
+### Backend
+- **Supabase**: 
+  - Base de datos PostgreSQL
+  - Autenticación y autorización
+  - Almacenamiento de archivos
+  - APIs en tiempo real
 
-- Theme colors can be adjusted in `src/app/globals.css`
-- Components are in `src/components/ui`
-- Page layouts are in `src/app` directory
+### Características Principales
 
-## Deployment
+1. **Sistema de Autenticación**
+   - Registro y inicio de sesión de usuarios
+   - Roles diferenciados (Cliente, Diseñador, Project Manager)
+   - Protección de rutas basada en roles
 
-This is a Next.js project that can be deployed to Vercel, Netlify, or any other platform that supports Next.js.
+2. **Gestión de Proyectos**
+   - Creación y edición de proyectos
+   - Asignación de diseñadores
+   - Sistema de estados del proyecto
+   - Carga y gestión de archivos
 
-For more information on deployment, see the [Next.js deployment documentation](https://nextjs.org/docs/deployment).
+3. **Interfaz Adaptativa**
+   - Diseño responsive
+   - Modo claro/oscuro
+   - Componentes reutilizables
+   - Feedback visual de acciones
 
-## License
+## Flujo de Trabajo
 
-This project is licensed under the MIT License.
+1. **Clientes**:
+   - Pueden crear nuevos proyectos
+   - Ver el estado de sus proyectos
+   - Subir archivos de referencia
+   - Comunicarse con los diseñadores
+
+2. **Diseñadores**:
+   - Ver proyectos asignados
+   - Actualizar el estado de los proyectos
+   - Subir archivos de diseño
+   - Comunicarse con los clientes
+
+3. **Project Managers**:
+   - Gestionar todos los proyectos
+   - Asignar diseñadores
+   - Supervisar el progreso
+   - Administrar usuarios
+
+
+## Desarrollo Local y Pruebas
+
+Para ejecutar pruebas:
+```bash
+npm run test
+# o
+yarn test
+```
+
+Para crear una build de producción:
+```bash
+npm run build
+# o
+yarn build
+```

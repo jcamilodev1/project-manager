@@ -58,7 +58,7 @@ export function FileUpload({
   return (
     <div className="space-y-4">
       <div 
-        className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer bg-gray-50 dark:bg-gray-900/50"
+        className="bg-background border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer "
         onClick={() => fileInputRef.current?.click()}
       >
         <input
