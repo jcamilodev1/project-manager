@@ -1,8 +1,9 @@
-"use client";
+"use client"
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { supabase } from "@/lib/supabase";
-import { UserWithRole, getCurrentUserWithRole, isClient, isProjectManager, isDesigner } from "@/lib/role-service";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
+import { UserWithRole, getCurrentUserWithRole, isClient, isProjectManager, isDesigner } from "@/lib/role-service"
 
 type AuthContextType = {
   user: UserWithRole | null;
@@ -12,7 +13,7 @@ type AuthContextType = {
   isDesigner: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
-};
+}
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -22,47 +23,55 @@ const AuthContext = createContext<AuthContextType>({
   isDesigner: false,
   signOut: async () => {},
   refreshUser: async () => {},
-});
+})
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserWithRole | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<UserWithRole | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const router = useRouter()
 
   const refreshUser = async () => {
-    setIsLoading(true);
-    const userData = await getCurrentUserWithRole();
-    setUser(userData);
-    setIsLoading(false);
-  };
+    setIsLoading(true)
+    console.log("first")
+    const userData = await getCurrentUserWithRole()
+    console.log(userData)
+    setUser(userData)
+    setIsLoading(false)
+  }
 
   useEffect(() => {
-    // Comprobar si hay una sesión activa al cargar
-    refreshUser();
+    refreshUser()
 
-    // Suscribirse a cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event) => {
+        console.log("Auth state changed:", event)
         if (event === "SIGNED_IN") {
-          await refreshUser();
+          await refreshUser()
+          console.log("Redirecting to dashboard")
+          setTimeout(() => {
+            router.push("/dashboard")
+          }, 0)
         } else if (event === "SIGNED_OUT") {
-          setUser(null);
+          setUser(null)
+          router.push("/login") // opcional
         }
       }
-    );
+    )
 
     return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
+    await supabase.auth.signOut()
+    setUser(null)
+    router.push("/login")
+  }
 
-  const value = {
+  const value: AuthContextType = {
     user,
     isLoading,
     isClient: isClient(user),
@@ -70,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isDesigner: isDesigner(user),
     signOut,
     refreshUser,
-  };
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}; 
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}

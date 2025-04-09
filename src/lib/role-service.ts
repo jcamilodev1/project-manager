@@ -25,7 +25,7 @@ type ErrorResponse = {
 // Obtener el rol del usuario actual
 export async function getCurrentUserWithRole(): Promise<UserWithRole | null> {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+  console.log("user", user)
   if (authError || !user) {
     console.error('Error al obtener usuario autenticado:', authError);
     return null;

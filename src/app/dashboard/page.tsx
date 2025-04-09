@@ -10,7 +10,6 @@ import { getDesigners } from "@/lib/user-service"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { CreateProjectButton } from "@/components/create-project"
-import { ProjectActions } from "@/components/project-actions"
 import { ProjectDetails } from "@/components/project-details"
 import { ProjectCard } from "@/components/project-card"
 
@@ -28,6 +27,7 @@ export default function DashboardPage() {
 
   // Función para actualizar la lista de proyectos
   const refreshProjects = useCallback(async () => {
+    console.log(user)
     if (!user) return;
     
     setLoadingProjects(true);
