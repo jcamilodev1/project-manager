@@ -12,6 +12,7 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { CreateProjectButton } from "@/components/create-project"
 import { ProjectActions } from "@/components/project-actions"
 import { ProjectDetails } from "@/components/project-details"
+import { ProjectCard } from "@/components/project-card"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -125,38 +126,16 @@ export default function DashboardPage() {
           ) : projects.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => (
-                <div 
-                  key={project.id} 
-                  className="p-6 border-2 border-gray-200 rounded-xl bg-card shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
-                >
-                  <div className="flex justify-between mb-2">
-                    <h2 className="text-xl font-semibold">{project.title}</h2>
-                    <ProjectActions 
-                      project={project} 
-                      onProjectUpdated={refreshProjects}
-                      designers={designers}
-                    />
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    {project.description || "Sin descripción"}
-                  </p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-1 rounded-full">
-                      {project.status}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="hover:bg-primary hover:text-primary-foreground"
-                      onClick={() => {
-                        setSelectedProject(project);
-                        setShowDetailsDialog(true);
-                      }}
-                    >
-                      Ver Detalles
-                    </Button>
-                  </div>
-                </div>
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onProjectUpdated={refreshProjects}
+                  designers={designers}
+                  onViewDetails={(project) => {
+                    setSelectedProject(project);
+                    setShowDetailsDialog(true);
+                  }}
+                />
               ))}
             </div>
           ) : (
@@ -189,4 +168,4 @@ export default function DashboardPage() {
       </footer>
     </div>
   )
-} 
+}

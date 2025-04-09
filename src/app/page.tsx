@@ -22,7 +22,7 @@ export default function Home() {
           Welcome to <span className="text-primary">Grayola</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mb-10">
-          A modern web application with authentication and a clean, responsive UI using ShadCN UI and Tailwind CSS.
+          A modern web application with authentication and a clean, responsive UI using Tailwind CSS.
         </p>
         <div className="flex gap-4">
           <Link 
