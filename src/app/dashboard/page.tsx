@@ -60,7 +60,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     refreshUser()
-  }, [refreshUser])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   useEffect(() => {
     if (user) {
       refreshProjects();
