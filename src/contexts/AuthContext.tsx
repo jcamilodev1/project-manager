@@ -1,6 +1,7 @@
 'use client';
 
 import { getUser } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 export type UserType = {
@@ -37,6 +38,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
   const [user, setUserState] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,7 +51,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    localStorage.removeItem('userId');
     setUserState(null);
+    router.push('/login'); // o a la ruta que desees
   };
 
   const refreshUser = async () => {
