@@ -24,7 +24,7 @@ export function ProjectDetails({ project, isOpen, onClose }: ProjectDetailsProps
   const [files, setFiles] = useState<FileInfo[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-
+  console.log(project.id)
   useEffect(() => {
     async function loadFiles() {
       if (isOpen && project) {

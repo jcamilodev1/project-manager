@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ModeToggle } from "@/components/mode-toggle"
 import { FormError, ErrorText } from "@/components/ui/form-error"
 import { cn } from "@/lib/utils"
+import { useAuth, UserType } from "@/contexts/AuthContext"
 
 // Validación de email usando regex
 const isValidEmail = (email: string) => {
@@ -32,7 +32,8 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-
+  const router = useRouter();
+  const { setUser } = useAuth();
   useEffect(() => {
     // Mostrar mensaje de éxito si se viene de registro exitoso
     if (searchParams?.get("registered") === "true") {
@@ -67,10 +68,9 @@ export default function LoginPage() {
     
     return isValid;
   };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("first")
+
     if (!validateForm()) {
       return;
     }
@@ -79,11 +79,11 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })  
-
+      
       if (error) {
         if (error.message.includes("Invalid login")) {
           setError("Email o contraseña incorrectos");
@@ -92,7 +92,17 @@ export default function LoginPage() {
         }
         return;
       }
-
+      
+      if (data?.user) {
+        // setUser({
+        //   ...data.user,
+        //   role: data.user.role as "client" | "project_manager" | "designer" | undefined
+        // });
+        setUser(data?.user as UserType)
+        router.push("/dashboard");
+      } else {
+        setError("No se pudo iniciar sesión");
+      }
     } catch (err) {
       console.error(err)
       setError("Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.")

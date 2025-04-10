@@ -4,7 +4,6 @@ import { useState } from "react"
 import { PlusCircle } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { createProject, NewProject } from "@/lib/project-service"
-import { uploadFiles } from "@/lib/storage-service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -39,64 +38,59 @@ export function CreateProjectButton({ onProjectCreated }: CreateProjectButtonPro
   if (!isClient) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+  
     if (!title.trim()) {
-      setError("El título del proyecto es obligatorio")
-      setLoading(false)
-      return
+      setError("El título del proyecto es obligatorio");
+      setLoading(false);
+      return;
     }
-
+  
     if (!user) {
-      setError("Debes iniciar sesión para crear un proyecto")
-      setLoading(false)
-      return
+      setError("Debes iniciar sesión para crear un proyecto");
+      setLoading(false);
+      return;
     }
-
+  
     const newProject: NewProject = {
-      title: title.trim(),
-      description: description.trim() || null,
-      client_id: user.id,
-    }
-
+      name: title.trim(),
+      description: description.trim() || "",
+      client_id: user.id || "",
+    };
+  
     try {
-      // 1. Crear el proyecto
-      const { data: project, error } = await createProject(user, newProject)
-      
+  
+      const { data: project, error } = await createProject(user, newProject, files);
+  
       if (error) {
-        setError(error)
-        setLoading(false)
-        return
+        setError(error);
+        setLoading(false);
+        return;
       }
-
-      // 2. Si hay archivos, subirlos
-      if (files.length > 0 && project) {
-        setUploadingFiles(true)
-        await uploadFiles(files, project.id)
-        setUploadingFiles(false)
-      }
-      
-      // Éxito: cerrar el diálogo y limpiar el formulario
-      setOpen(false)
-      setTitle("")
-      setDescription("")
-      setFiles([])
-      
-      // Llamar a la función de actualización si se proporcionó
+  
+      console.log("Proyecto creado:", project);
+  
+      // Limpiar y cerrar
+      setOpen(false);
+      setTitle("");
+      setDescription("");
+      setFiles([]);
+  
       if (onProjectCreated) {
-        onProjectCreated()
+        onProjectCreated();
       }
-      
+  
     } catch (err) {
-      console.error("Error al crear proyecto:", err)
-      setError("Ha ocurrido un error inesperado")
+      console.error("Error inesperado:", err);
+      setError("Ha ocurrido un error inesperado");
     } finally {
-      setLoading(false)
-      setUploadingFiles(false)
+      setLoading(false);
+      setUploadingFiles(false);
     }
-  }
+  };
+  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

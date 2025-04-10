@@ -1,94 +1,77 @@
-"use client"
+"use client";
+import { useEffect, useState, useCallback } from "react";
+import { ProjectCard } from "@/components/project-card";
+import { getDesigners, getProjects, Project } from "@/lib/project-service";
+import { Role, UserWithRole } from "@/lib/role-service";
+import { Link } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CreateProjectButton } from "@/components/create-project";
+import { ProjectDetails } from "@/components/project-details";
+import { ModeToggle } from "@/components/mode-toggle";
+import { useAuth } from "@/contexts/AuthContext";
 
-import { useState, useEffect, useCallback } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/AuthContext"
-import { Project, getProjects } from "@/lib/project-service"
-import { getDesigners } from "@/lib/user-service"
-
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
-import { CreateProjectButton } from "@/components/create-project"
-import { ProjectDetails } from "@/components/project-details"
-import { ProjectCard } from "@/components/project-card"
+interface Designer {
+  id: string;
+  full_name: string;
+  email: string;
+}
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const { user, isLoading, signOut, isProjectManager } = useAuth()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [designers, setDesigners] = useState<Array<{ id: string; email: string; fullName: string | null }>>([])
-  const [loadingProjects, setLoadingProjects] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { signOut, user, refreshUser } = useAuth()
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [designers, setDesigners] = useState<Designer[]>([]);
   
   // Estado para el diálogo de detalles
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
 
-  // Función para actualizar la lista de proyectos
   const refreshProjects = useCallback(async () => {
-    console.log(user)
     if (!user) return;
-    
+    const dataUser: UserWithRole = {
+      id: user.id,
+      email: user.email,
+      role: user.role_id?.toString() || '', // asegurarse de que sea una cadena
+      roleName: Role[Number(user.role_id)], // convertir explícitamente a número
+      full_name: user.full_name
+    };
+
+
     setLoadingProjects(true);
     try {
-      const { data, error } = await getProjects(user);
-      
-      if (error) {
-        console.error("Error fetching projects:", error);
-        setError(error);
-      } else {
-        setProjects(data || []);
+      const response = await getProjects(dataUser);
+      const data = await getDesigners()
+      console.log(data)
+      setDesigners(data.designers)
+      if (response.error) {
+        throw new Error(response.error || "Error al obtener proyectos");
       }
+      setProjects(response.data || []);
+
     } catch (err) {
-      console.error("Error:", err);
-      setError("Ocurrió un error al cargar los proyectos");
+      console.error("Error fetching projects:", err);
+      setError("Error al cargar los proyectos");
     } finally {
       setLoadingProjects(false);
     }
   }, [user]);
 
-  // Función para cargar los diseñadores
-  const loadDesigners = useCallback(async () => {
-    if (!user || !isProjectManager) return;
-    
-    try {
-      const { data, error } = await getDesigners(user);
-      
-      if (error) {
-        console.error("Error fetching designers:", error);
-      } else {
-        setDesigners(data || []);
-      }
-    } catch (err) {
-      console.error("Error:", err);
-    }
-  }, [user, isProjectManager]);
-
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace("/login")
-      return
-    }
-
+    refreshUser()
+  }, [])
+  useEffect(() => {
     if (user) {
       refreshProjects();
-      
-      // Cargar diseñadores solo si es Project Manager
-      if (isProjectManager) {
-        loadDesigners();
-      }
     }
-  }, [user, isLoading, router, refreshProjects, isProjectManager, loadDesigners]);
-
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-background/90">
-        <div className="text-xl font-medium animate-pulse">Cargando...</div>
-      </div>
-    )
+    console.log(user)
+  }, [user, refreshProjects]);
+  const role = {
+    1: "Cliente",
+    3: "Diseñador",
+    2: "Project Manager"
   }
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-background/90">
       <header className="py-4 px-6 flex justify-between items-center shadow-sm">
@@ -97,7 +80,7 @@ export default function DashboardPage() {
         </Link>
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium mr-2">
-            {user.roleName}: {user.email}
+            {role[user?.role_id as keyof typeof role]}: {user?.email}
           </span>
           <Button variant="ghost" onClick={signOut} className="hover:bg-primary/10">
             Cerrar Sesión
@@ -111,7 +94,7 @@ export default function DashboardPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Panel de Proyectos</h1>
             <p className="text-muted-foreground">
-              Bienvenido, {user.fullName || user.email}!
+              Bienvenido, {user?.full_name || user?.email}!
             </p>
           </div>
           
@@ -142,7 +125,7 @@ export default function DashboardPage() {
             <div className="text-center py-10">
               <h3 className="text-lg font-medium mb-2">No hay proyectos</h3>
               <p className="text-muted-foreground mb-6">
-                {user.roleName === "Cliente" 
+                {user?.role_id === 1 
                   ? "¡Comienza creando tu primer proyecto!" 
                   : "Aún no hay proyectos asignados."}
               </p>
@@ -167,5 +150,5 @@ export default function DashboardPage() {
         © {new Date().getFullYear()} Grayola. Todos los derechos reservados.
       </footer>
     </div>
-  )
+  );
 }

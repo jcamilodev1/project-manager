@@ -8,7 +8,8 @@ import {
   updateProject, 
   deleteProject, 
   assignProjectToDesigner,
-  ProjectStatus
+  ProjectStatus,
+  Designer
 } from "@/lib/project-service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,7 +34,7 @@ import {
 interface ProjectActionsProps {
   project: Project
   onProjectUpdated: () => void
-  designers?: { id: string; email: string; fullName: string | null }[]
+  designers?: Designer[]
 }
 
 export function ProjectActions({ project, onProjectUpdated, designers = [] }: ProjectActionsProps) {
@@ -276,7 +277,7 @@ export function ProjectActions({ project, onProjectUpdated, designers = [] }: Pr
                   <option value="">Seleccionar un diseñador</option>
                   {designers.map(designer => (
                     <option key={designer.id} value={designer.id}>
-                      {designer.fullName || designer.email}
+                      {designer.full_name || designer.email}
                     </option>
                   ))}
                 </select>

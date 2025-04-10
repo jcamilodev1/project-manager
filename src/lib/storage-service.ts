@@ -148,18 +148,15 @@ export async function uploadFiles(
  */
 export async function getProjectFiles(project_id: string): Promise<FileInfo[]> {
   try {
-    const { data, error } = await supabase
-      .from('project_files')
-      .select('*')
-      .eq('project_id', project_id)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error al obtener archivos del proyecto:', error);
+    const res = await fetch(`/api/projects/${project_id}/files`);
+
+    if (!res.ok) {
+      console.error('Error al obtener archivos del proyecto');
       return [];
     }
-    
-    return data || [];
+    console.log(res)
+    const { files } = await res.json();
+    return files;
   } catch (error) {
     console.error('Error inesperado al obtener archivos:', error);
     return [];

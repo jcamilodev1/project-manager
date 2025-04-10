@@ -1,19 +1,27 @@
-"use client"
+'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
-import { UserWithRole, getCurrentUserWithRole, isClient, isProjectManager, isDesigner } from "@/lib/role-service"
+import { getUser } from '@/lib/api';
+import { createContext, useContext, useEffect, useState } from 'react';
 
-type AuthContextType = {
-  user: UserWithRole | null;
+export type UserType = {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: 'client' | 'project_manager' | 'designer';
+  role_id?: number;
+  full_name?: string;
+};
+
+export type AuthContextType = {
+  user: UserType | null;
   isLoading: boolean;
   isClient: boolean;
   isProjectManager: boolean;
   isDesigner: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
-}
+  setUser: (user: UserType | null) => void;
+};
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -23,63 +31,76 @@ const AuthContext = createContext<AuthContextType>({
   isDesigner: false,
   signOut: async () => {},
   refreshUser: async () => {},
-})
+  setUser: () => {},
+});
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserWithRole | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const router = useRouter()
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUserState] = useState<UserType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const refreshUser = async () => {
-    setIsLoading(true)
-    console.log("first")
-    const userData = await getCurrentUserWithRole()
-    console.log(userData)
-    setUser(userData)
-    setIsLoading(false)
-  }
-
-  useEffect(() => {
-    refreshUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event) => {
-        console.log("Auth state changed:", event)
-        if (event === "SIGNED_IN") {
-          await refreshUser()
-          console.log("Redirecting to dashboard")
-          setTimeout(() => {
-            router.push("/dashboard")
-          }, 0)
-        } else if (event === "SIGNED_OUT") {
-          setUser(null)
-          router.push("/login") // opcional
-        }
-      }
-    )
-
-    return () => {
-      subscription.unsubscribe()
+  const setUser = (user: UserType | null) => {
+    if (user?.id) {
+      localStorage.setItem('userId', user.id);
+    } else {
+      localStorage.removeItem('userId');
     }
-  }, [])
+  };
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    router.push("/login")
-  }
+    setUserState(null);
+  };
 
-  const value: AuthContextType = {
-    user,
-    isLoading,
-    isClient: isClient(user),
-    isProjectManager: isProjectManager(user),
-    isDesigner: isDesigner(user),
-    signOut,
-    refreshUser,
-  }
+  const refreshUser = async () => {
+    try {
+      const id = localStorage.getItem('userId');
+      if (!id) throw new Error('No hay ID de usuario');
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+      const res = await getUser(id);
+      if (res.user) {
+        setUserState(res.user);
+      } else {
+        throw res.error || new Error('Usuario no encontrado');
+      }
+    } catch (err) {
+      console.error('Error cargando usuario', err);
+      setUserState(null);
+    }
+  };
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const storedId = localStorage.getItem('userId');
+        if (storedId) {
+          await refreshUser();
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadUser();
+  }, []);
+
+  const isClient = user?.role_id === 1;
+  const isProjectManager = user?.role_id === 2;
+  const isDesigner = user?.role_id === 3;
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        isLoading,
+        isClient,
+        isProjectManager,
+        isDesigner,
+        signOut,
+        refreshUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};

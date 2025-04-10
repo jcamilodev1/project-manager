@@ -1,11 +1,11 @@
 import { Project } from "@/lib/project-service"
 import { Button } from "@/components/ui/button"
 import { ProjectActions } from "@/components/project-actions"
-
+import { Designer } from "@/lib/project-service"
 interface ProjectCardProps {
   project: Project
   onProjectUpdated: () => Promise<void>
-  designers: Array<{ id: string; email: string; fullName: string | null }>
+  designers: Designer[]
   onViewDetails: (project: Project) => void
 }
 
