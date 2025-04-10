@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     refreshUser()
-  }, [])
+  }, [refreshUser])
   useEffect(() => {
     if (user) {
       refreshProjects();

@@ -27,7 +27,7 @@ export const RoleGuard = ({
     }
 
     // Si hay usuario pero no tiene un rol permitido, redirigir
-    if (!isLoading && user && !allowedRoles.includes(user.role)) {
+    if (!isLoading && user && !allowedRoles.includes(user.role_id as Role)) {
       router.push("/unauthorized");
       return;
     }
@@ -43,7 +43,7 @@ export const RoleGuard = ({
   }
 
   // Si no hay usuario o no tiene un rol permitido, no mostrar nada
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user.role_id as Role)) {
     return null;
   }
 

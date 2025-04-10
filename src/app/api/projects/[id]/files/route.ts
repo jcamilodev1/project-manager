@@ -1,14 +1,14 @@
 // src/app/api/projects/[id]/files/route.ts
 
 import { createClient } from '@supabase/supabase-js';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (!process.env.SUPABASE_SERVICE_KEY) {
-    return Response.json(
+    return NextResponse.json(
       { error: 'Error de configuración del servidor' },
       { status: 500 }
     );
@@ -31,8 +31,8 @@ export async function GET(
 
   if (error) {
     console.error('Error al obtener archivos del proyecto:', error);
-    return Response.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  return Response.json({ files: data });
+  return NextResponse.json({ files: data });
 }

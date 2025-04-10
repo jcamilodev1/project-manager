@@ -1,16 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { ProjectStatus } from '@/lib/project-service';
+import { NextResponse } from 'next/server';
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const projectId = params.id;
+  const projectId = await Promise.resolve(params).then(p => p.id);
   const body = await req.json();
   const { user, designerId } = body;
 
   if (!process.env.SUPABASE_SERVICE_KEY) {
-    return Response.json({ error: 'Error de configuración del servidor' }, { status: 500 });
+    return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 });
   }
 
   const supabase = createClient(
@@ -19,11 +20,11 @@ export async function POST(
   );
 
   if (!user || user.role_id !== 2) {
-    return Response.json({ error: 'Solo los Project Managers pueden asignar proyectos' }, { status: 403 });
+    return NextResponse.json({ error: 'Solo los Project Managers pueden asignar proyectos' }, { status: 403 });
   }
 
   if (!designerId) {
-    return Response.json({ error: 'El ID del diseñador es obligatorio' }, { status: 400 });
+    return NextResponse.json({ error: 'El ID del diseñador es obligatorio' }, { status: 400 });
   }
 
   const { data, error } = await supabase
@@ -38,8 +39,8 @@ export async function POST(
     .single();
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return Response.json({ project: data }, { status: 200 });
+  return NextResponse.json({ project: data }, { status: 200 });
 }

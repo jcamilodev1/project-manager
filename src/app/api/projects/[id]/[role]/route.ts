@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string; role: string } }
+  { params }: { params: Promise<{ id: string; role: string }> }
 ) {
   // Esperar a que los parámetros estén disponibles
   const resolvedParams = await Promise.resolve(params);

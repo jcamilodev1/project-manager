@@ -39,7 +39,7 @@ export default function UnauthorizedPage() {
                 Has iniciado sesión como <span className="font-bold">{user.email}</span>
               </p>
               <p className="text-sm">
-                Tu rol actual es <span className="font-bold">{user.roleName}</span>
+                Tu rol actual es <span className="font-bold">{user.role_id}</span>
               </p>
             </div>
           )}

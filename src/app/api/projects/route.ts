@@ -1,18 +1,13 @@
 import { Role } from '@/lib/role-service';
+import { ProjectStatus } from '@/lib/project-service';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime';
-
-export enum ProjectStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
-}
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   if (!process.env.SUPABASE_SERVICE_KEY) {
-    return Response.json(
+    return NextResponse.json(
       { error: 'Error de configuración del servidor' },
       { status: 500 }
     );
@@ -33,11 +28,11 @@ export async function POST(request: Request) {
     const files = formData.getAll('files') as File[];
     console.log(files)
     if (!name || !description || !client_id) {
-      return Response.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
+      return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
 
     if (role !== Role.CLIENT) {
-      return Response.json({ error: 'Solo los clientes pueden crear proyectos' }, { status: 403 });
+      return NextResponse.json({ error: 'Solo los clientes pueden crear proyectos' }, { status: 403 });
     }
 
     const { data: project, error: insertError } = await supabase
@@ -52,7 +47,7 @@ export async function POST(request: Request) {
       .single();
 
     if (insertError || !project) {
-      return Response.json(
+      return NextResponse.json(
         { error: insertError?.message || 'Error al crear proyecto' },
         { status: 400 }
       );
@@ -109,13 +104,13 @@ export async function POST(request: Request) {
       const successful = uploadResults.filter(f => f.success);
 
       if (failed.length === files.length) {
-        return Response.json(
+        return NextResponse.json(
           { error: 'Proyecto creado pero todos los archivos fallaron al subir' },
           { status: 500 }
         );
       }
 
-      return Response.json({
+      return NextResponse.json({
         project,
         uploaded_files: successful,
         ...(failed.length > 0 && {
@@ -124,11 +119,11 @@ export async function POST(request: Request) {
       }, { status: 201 });
     }
 
-    return Response.json({ project }, { status: 201 });
+    return NextResponse.json({ project }, { status: 201 });
 
   } catch (error) {
     console.error('Error inesperado al crear proyecto:', error);
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-    return Response.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
