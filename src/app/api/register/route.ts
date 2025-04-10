@@ -1,7 +1,6 @@
 import { Role } from '@/lib/role-service';
 import { createClient } from '@supabase/supabase-js';
 
-
 export async function POST(request: Request) {
   if (!process.env.SUPABASE_SERVICE_KEY) {
     return Response.json(
@@ -18,18 +17,32 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
+    // Crear usuario en auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
       email_confirm: true 
     });
-    console.log(authData)
+
     if (authError || !authData.user) {
       return Response.json(
         { error: authError?.message || 'Error al crear usuario' },
         { status: 400 }
       );
     }
+
+    // Insertar en tabla personalizada 'users'
+    await supabase
+  .from('users')
+  .upsert([
+    {
+      id: authData.user.id,
+      email,
+      role_id: role || Role.CLIENT,
+      full_name: fullName || null
+    }
+  ]);
+
 
     return Response.json({
       user: {
